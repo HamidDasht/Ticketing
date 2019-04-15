@@ -29,6 +29,7 @@ CREATE TABLE `tickets` (
   `body` text NOT NULL,
   `response` text,
   `status` text NOT NULL,
+  `date` datetime NOT NULL,
   PRIMARY KEY (`ticket_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -79,4 +80,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-04-15  7:37:40
+-- Dump completed on 2019-04-15 14:01:10
