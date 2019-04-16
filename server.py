@@ -1,5 +1,4 @@
 import torndb
-import json
 import time
 import os
 import tornado.escape
@@ -26,6 +25,9 @@ class Application(tornado.web.Application):
             (r"/sendticket", SendTicket),
             (r"/getticketcli", GetTicketCli),
             (r"/closeticket", CloseTicket),
+            (r"/getticketmod", GetTicketMod),
+            (r"/restoticketmod", ResToTicketMod),
+            (r"/changestatus", ChangeStatus),
             (r".*", DefaultHandler),
 
         ]
@@ -204,8 +206,7 @@ class GetTicketCli(BaseHandler):
 
             msg['block '+str(i)] = entry
 
-        js = json.dumps(msg, indent=4, sort_keys=True)
-        self.write(js)
+        self.write(msg)
 
 
 
@@ -223,7 +224,7 @@ class CloseTicket(BaseHandler):
             return
 
         if user.type == 'a':
-            msg = {'message': 'Admins not allowed to perform this method!',
+            msg = {'message': 'Admins are not allowed to perform this method!',
                    'code': '301'}
             self.write(msg)
             return
@@ -247,6 +248,126 @@ class CloseTicket(BaseHandler):
                'code': '200'}
         self.write(msg)
         return
+
+
+class GetTicketMod(BaseHandler):
+    def post(self):
+        token = self.get_query_argument('token')
+
+        user = self.db.get("SELECT type FROM users WHERE token=%s", token)
+
+        if not user:
+            msg = {'message': 'Invalid token!',
+                   'code': '300'}
+            self.write(msg)
+            return
+
+        if user.type != 'a':
+            msg = {'message': 'Users are not allowed to perfrom this method!',
+                   'code': '302'}
+            self.write(msg)
+            return
+
+        tickets = self.db.query("SELECT * FROM tickets")
+
+        msg = {'tickets': 'There is(are) -' + str(len(tickets)) + '- Ticket(s)',
+               'code': '200'}
+
+        for i in range(0, len(tickets)):
+            if not tickets[i].response:
+                entry = {'subject': tickets[i].subject,
+                         'body': tickets[i].body,
+                         'status': tickets[i].status,
+                         'id': tickets[i].ticket_id,
+                         'date': str(tickets[i].date)}
+            else:
+                entry = {'subject': tickets[i].subject,
+                         'body': tickets[i].body,
+                         'response': tickets[i].response,
+                         'status': tickets[i].status,
+                         'id': tickets[i].ticket_id,
+                         'date': str(tickets[i].date)}
+
+            msg['block ' + str(i)] = entry
+
+        self.write(msg)
+
+
+class ResToTicketMod(BaseHandler):
+    def post(self):
+        token = self.get_query_argument('token')
+        ticket_id = self.get_query_argument('id')
+        body = self.get_query_argument('body')
+
+        user = self.db.get("SELECT type FROM users WHERE token=%s", token)
+
+        if not user:
+            msg = {'message': 'Invalid token!',
+                   'code': '300'}
+            self.write(msg)
+            return
+
+        if user.type != 'a':
+            msg = {'message': 'Users are not allowed to perform this method!',
+                   'code': '302'}
+            self.write(msg)
+            return
+
+        ticket = self.db.get("SELECT * FROM tickets WHERE ticket_id=%s", ticket_id)
+
+        if not ticket:
+            msg = {'message': 'Invalid ticket id!',
+                   'code': '400'}
+            self.write(msg)
+            return
+
+        self.db.execute("UPDATE tickets SET response=%s WHERE ticket_id=%s", body, ticket_id)
+
+        msg = {'message': 'Response to Ticket With id -' + str(ticket_id) + '- Sent Successfully',
+               'code': '200'}
+
+        self.write(msg)
+
+
+class ChangeStatus(BaseHandler):
+    def post(self):
+        token = self.get_query_argument('token')
+        ticket_id = self.get_query_argument('id')
+        status = self.get_query_argument('status')
+
+        user = self.db.get("SELECT type FROM users WHERE token=%s", token)
+
+        if not user:
+            msg = {'message': 'Invalid token!',
+                   'code': '300'}
+            self.write(msg)
+            return
+
+        if user.type != 'a':
+            msg = {'message': 'Users are not allowed to perform this method!',
+                   'code': '302'}
+            self.write(msg)
+            return
+
+        ticket = self.db.get("SELECT * FROM tickets WHERE ticket_id=%s", ticket_id)
+
+        if not ticket:
+            msg = {'message': 'Invalid ticket id!',
+                   'code': '400'}
+            self.write(msg)
+            return
+
+        if not (status.lower() == 'open' or status.lower() == 'closed' or
+                status.lower() == 'in progress'):
+            msg = {'message': 'Invalid status only \'Closed\' \'Open\' and \'In Progress\' Are Allowd',
+                   'code': '402'}
+            self.write(msg)
+            return
+
+        self.db.execute("UPDATE tickets SET status=%s WHERE ticket_id=%s", status.title(), ticket_id)
+        msg = {'message': 'Status Ticket With id -' + str(ticket_id) + '- Changed Successfully',
+               'code': '200'}
+        self.write(msg)
 
 
 def main():
