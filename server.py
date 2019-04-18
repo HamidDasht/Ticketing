@@ -96,14 +96,15 @@ class Login(BaseHandler):
             self.write(msg)
             return
 
-        response = self.db.get("SELECT token FROM users WHERE username=%s AND password=%s",
+        response = self.db.get("SELECT token, type FROM users WHERE username=%s AND password=%s",
                                username, password)
 
         if response:
             if response.token:
                 msg = {'message': 'Already logged in!',
                        'code': '202',
-                       'token': response.token}
+                       'token': response.token,
+                       'type': response.type}
                 self.write(msg)
                 return
 
@@ -113,8 +114,10 @@ class Login(BaseHandler):
 
             msg = {'message': 'Logged in Successfully!',
                    'code': '200',
-                   'token': token}
+                   'token': token,
+                   'type': response.type}
             self.write(msg)
+            return
 
         else:
             msg = {'message': 'Wrong username/password pair!',
@@ -363,7 +366,7 @@ class ResToTicketMod(BaseHandler):
             self.write(msg)
             return
 
-        self.db.execute("UPDATE tickets SET response=%s WHERE ticket_id=%s", body, ticket_id)
+        self.db.execute("UPDATE tickets SET response=%s, status=%s WHERE ticket_id=%s", body, "Closed", ticket_id)
 
         msg = {'message': 'Response to Ticket With id -' + str(ticket_id) + '- Sent Successfully',
                'code': '200'}
@@ -425,4 +428,3 @@ def main():
 
 
 main()
-
