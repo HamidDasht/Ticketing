@@ -51,11 +51,23 @@ class DefaultHandler(BaseHandler):
 
 class Signup(BaseHandler):
     def post(self):
-        username = self.get_query_argument('username')
-        password = self.get_query_argument('password')
-        firstname = self.get_query_argument('firstname', None)
-        lastname = self.get_query_argument('lastname', None)
-        type = self.get_query_argument('type')
+        username = self.get_argument('username')
+        password = self.get_argument('password')
+        firstname = self.get_argument('firstname', None)
+        lastname = self.get_argument('lastname', None)
+        type = self.get_argument('type')
+
+        if not username or not password or not type:
+            msg = {'message': 'Invalid input!',
+                   'code': '403'}
+            self.write(msg)
+            return
+
+        if not (type == 'a' or type == 'c'):
+            msg = {'message': 'Invalid input',
+                   'code': '403'}
+            self.write(msg)
+            return
 
         users = self.db.query("SELECT * FROM users WHERE username=%s", username)
         if len(users) > 0:
@@ -75,8 +87,14 @@ class Signup(BaseHandler):
 
 class Login(BaseHandler):
     def post(self):
-        username = self.get_query_argument('username')
-        password = self.get_query_argument('password')
+        username = self.get_argument('username')
+        password = self.get_argument('password')
+
+        if not username or not password:
+            msg = {'message': 'Invalid input!',
+                   'code': '403'}
+            self.write(msg)
+            return
 
         response = self.db.get("SELECT token FROM users WHERE username=%s AND password=%s",
                                username, password)
@@ -84,7 +102,8 @@ class Login(BaseHandler):
         if response:
             if response.token:
                 msg = {'message': 'Already logged in!',
-                       'code': '202'}
+                       'code': '202',
+                       'token': response.token}
                 self.write(msg)
                 return
 
@@ -107,8 +126,14 @@ class Login(BaseHandler):
 
 class Logout(BaseHandler):
     def post(self):
-        username = self.get_query_argument('username')
-        password = self.get_query_argument('password')
+        username = self.get_argument('username')
+        password = self.get_argument('password')
+
+        if not username or not password:
+            msg = {'message': 'Invalid input!',
+                   'code': '403'}
+            self.write(msg)
+            return
 
         response = self.db.get("SELECT * FROM users WHERE username=%s AND password=%s",
                                username, password)
@@ -136,17 +161,22 @@ class Logout(BaseHandler):
 
 class SendTicket(BaseHandler):
     def post(self):
-        token = self.get_query_argument('token')
-        subject = self.get_query_argument('subject')
-        body = self.get_query_argument('body')
+        token = self.get_argument('token')
+        subject = self.get_argument('subject')
+        body = self.get_argument('body')
 
+        if not subject or not body:
+            msg = {'message': 'Invalid input!',
+                   'code': '403'}
+            self.write(msg)
+            return
 
         user = self.db.get("SELECT user_id, token FROM users WHERE token=%s", token)
 
         user_id = user.user_id
         user_id = int(user_id)
-
         if user.token:
+            print(user.user_id)
             self.db.execute("INSERT INTO tickets (user_id, subject, body, response, status, date)"
                             "VALUES (%s,%s,%s,%s,'Open', %s)", user_id, subject, body, None,
                             time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -168,7 +198,7 @@ class SendTicket(BaseHandler):
 
 class GetTicketCli(BaseHandler):
     def post(self):
-        token = self.get_query_argument('token')
+        token = self.get_argument('token')
         user = self.db.get("SELECT user_id, type FROM users WHERE token=%s", token)
 
         if not user:
@@ -212,8 +242,14 @@ class GetTicketCli(BaseHandler):
 
 class CloseTicket(BaseHandler):
     def post(self):
-        token = self.get_query_argument('token')
-        ticket_id = self.get_query_argument('id')
+        token = self.get_argument('token')
+        ticket_id = self.get_argument('id')
+
+        if not ticket_id:
+            msg = {'message': 'Invalid input!',
+                   'cdoe': '403'}
+            self.write(msg)
+            return
 
         user = self.db.get("SELECT * FROM users WHERE token=%s", token)
 
@@ -252,7 +288,7 @@ class CloseTicket(BaseHandler):
 
 class GetTicketMod(BaseHandler):
     def post(self):
-        token = self.get_query_argument('token')
+        token = self.get_argument('token')
 
         user = self.db.get("SELECT type FROM users WHERE token=%s", token)
 
@@ -295,9 +331,15 @@ class GetTicketMod(BaseHandler):
 
 class ResToTicketMod(BaseHandler):
     def post(self):
-        token = self.get_query_argument('token')
-        ticket_id = self.get_query_argument('id')
-        body = self.get_query_argument('body')
+        token = self.get_argument('token')
+        ticket_id = self.get_argument('id')
+        body = self.get_argument('body')
+
+        if not ticket_id or not body:
+            msg = {'message': 'Invalid input!',
+                   'code': '403'}
+            self.write(msg)
+            return
 
         user = self.db.get("SELECT type FROM users WHERE token=%s", token)
 
@@ -331,9 +373,15 @@ class ResToTicketMod(BaseHandler):
 
 class ChangeStatus(BaseHandler):
     def post(self):
-        token = self.get_query_argument('token')
-        ticket_id = self.get_query_argument('id')
-        status = self.get_query_argument('status')
+        token = self.get_argument('token')
+        ticket_id = self.get_argument('id')
+        status = self.get_argument('status')
+
+        if not ticket_id or not status:
+            msg = {'message': 'Invalid input!',
+                   'code': '403'}
+            self.write(msg)
+            return
 
         user = self.db.get("SELECT type FROM users WHERE token=%s", token)
 
@@ -377,3 +425,4 @@ def main():
 
 
 main()
+
