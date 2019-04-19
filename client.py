@@ -88,8 +88,8 @@ def client_list(username, password, token):
         print("Choose what to do:\n\t1.Send ticket\n\t2.Get sent tickets"
             "\n\t3.Close sent ticket\n\t4.Logout\n\t5.Exit without logging out")
 
-        op = int(input())
-        if op == 1:
+        op = raw_input()
+        if op == "1":
             clear()
             response = 400
             tikect_id = ""
@@ -110,7 +110,7 @@ def client_list(username, password, token):
                 print("Your ticket id is " + str(ticket_id) + "\n")
                 raw_input("Press Enter to continue...")
         
-        elif op == 2:
+        elif op == "2":
             clear()
             data = get_ticket_client(token)
             response = int(data['code'])
@@ -130,7 +130,7 @@ def client_list(username, password, token):
 
                 raw_input("\nPress Enter to continue...")
         
-        elif op == 3:
+        elif op == "3":
             clear()
             response = 400
             while not response == 200:
@@ -143,11 +143,11 @@ def client_list(username, password, token):
             if response == 200:
                 raw_input("Press Enter to continue...")
 
-        elif op == 4:
+        elif op == "4":
             logout(username, password)
             return
 
-        elif op == 5:
+        elif op == "5":
             exit(0)
     
 
@@ -158,8 +158,8 @@ def admin_list(username, password, token):
         print("Choose what to do:\n\t1.Reply to tikcets\n\t2.Get sent tickets"
             "\n\t3.Change tickets status\n\t4.Logout\n\t5.Exit without logging out")
 
-        op = int(input())
-        if op == 1:
+        op = raw_input()
+        if op == "1":
             clear()
             response = 400
             while not response == 200:
@@ -173,7 +173,7 @@ def admin_list(username, password, token):
             if response == 200:
                 raw_input("Press Enter to continue...")
         
-        elif op == 2:
+        elif op == "2":
             clear()
             data = get_ticket_admin(token)
             response = int(data['code'])
@@ -193,7 +193,7 @@ def admin_list(username, password, token):
 
                 raw_input("\nPress Enter to continue...")
         
-        elif op == 3:
+        elif op == "3":
             clear()
             response = 400
             status = ""
@@ -209,11 +209,11 @@ def admin_list(username, password, token):
                 print("New status is '" + status.title() + "'.\n")
                 raw_input("Press Enter to continue...")
 
-        elif op == 4:
+        elif op == "4":
             logout(username, password)
             return
 
-        elif op == 5:
+        elif op == "5":
             exit(0)
 
 def main_loop():
@@ -221,9 +221,9 @@ def main_loop():
     while not exit:
         clear()
         print("Choose what to do:\n\t1.Signup\n\t2.Login\n\t3.Exit")
-        op = int(input())
+        op = raw_input()
 
-        if op == 1:
+        if op == "1":
             clear()
             response = 400
             while not response == 200:
@@ -252,7 +252,7 @@ def main_loop():
             if response == 200:
                 raw_input("Press Enter to continue...")
 
-        elif op == 2:
+        elif op == "2":
             clear()
             response = 400
             token = ""
@@ -280,7 +280,7 @@ def main_loop():
             if logged_in:
                 secondary_loop(username, password, token, user_type)
 
-        elif op == 3:
+        elif op == "3":
             exit = True
 
 
